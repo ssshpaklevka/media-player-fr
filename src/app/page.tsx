@@ -23,7 +23,6 @@ export default function Home() {
     user,
   } = useAuth();
 
-  // Если уже авторизован, перенаправляем в зависимости от location_id
   useEffect(() => {
     if (!isAuthLoading && isAuthenticated && user) {
       // Если location_id пустой - это админ, иначе - обычный пользователь
@@ -35,7 +34,6 @@ export default function Home() {
     }
   }, [isAuthenticated, isAuthLoading, user, router]);
 
-  // Показываем загрузку пока проверяем авторизацию
   if (isAuthLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
