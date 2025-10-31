@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../admin/hooks/use-auth";
 import { useBanners } from "../admin/hooks/use-banners";
 
@@ -43,12 +43,36 @@ export default function DisplayPage() {
     }
   }, []);
 
+  // Ссылка на видео для отслеживания окончания при seconds = 0
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
   // Автоматическая смена слайдов с учетом времени показа каждого баннера
   useEffect(() => {
     if (banners.length === 0) return;
 
     const currentBanner = banners[currentIndex];
-    const showTime = (currentBanner?.seconds || 5) * 1000; // Время в миллисекундах
+
+    // Если видео и seconds === 0, ждем окончания видео
+    if (currentBanner?.type === "video" && currentBanner?.seconds === 0) {
+      const node = videoRef.current;
+      if (!node) return;
+
+      const handleEnded = () => {
+        setCurrentIndex((prev) => (prev + 1) % banners.length);
+      };
+
+      node.addEventListener("ended", handleEnded);
+      return () => {
+        node.removeEventListener("ended", handleEnded);
+      };
+    }
+
+    // Иначе используем таймер: если seconds не указан или 0 (для изображений), ставим 5с
+    const seconds =
+      currentBanner?.seconds && currentBanner.seconds > 0
+        ? currentBanner.seconds
+        : 5;
+    const showTime = seconds * 1000;
 
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % banners.length);
@@ -111,9 +135,10 @@ export default function DisplayPage() {
           )
         ) : currentBanner.image ? (
           <video
+            ref={videoRef}
             src={currentBanner.image}
             autoPlay
-            loop
+            loop={currentBanner.seconds !== 0}
             className="w-full h-full object-cover"
             style={{
               width: "100vw",
@@ -126,31 +151,7 @@ export default function DisplayPage() {
             <span className="text-white text-2xl">Видео недоступно</span>
           </div>
         )}
-
-        {/* Информация о баннере */}
-        {/* <div className="absolute bottom-10 left-10 right-10 text-white">
-          <div className="bg-black/50 p-6 rounded-lg">
-            <h2 className="text-3xl font-bold mb-2">{currentBanner.title}</h2>
-            {currentBanner.description && (
-              <p className="text-lg opacity-90">{currentBanner.description}</p>
-            )}
-          </div>
-        </div> */}
       </div>
-
-      {/* Индикаторы слайдов */}
-      {/* {banners.length > 1 && (
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-          {banners.map((_: Banner, index: number) => (
-            <div
-              key={index}
-              className={`w-3 h-3 rounded-full ${
-                index === currentIndex ? "bg-white" : "bg-white/50"
-              }`}
-            />
-          ))}
-        </div>
-      )} */}
     </div>
   );
 }
