@@ -95,7 +95,7 @@ export default function DisplayPage() {
       <div className="fixed inset-0 bg-black overflow-hidden">
         <div className="w-screen h-screen relative">
           <Image
-            src="/img/logo.webp"
+            src="/media-player/img/logo.webp"
             alt="Нет баннеров для отображения"
             fill
             className="object-cover"
