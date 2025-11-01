@@ -8,15 +8,13 @@ import { useBanners } from "../admin/hooks/use-banners";
 
 export default function DisplayPage() {
   const router = useRouter();
-  const { user, isAuthenticated, isAuthLoading, logout } = useAuth();
+  const { user, isAuthenticated, isAuthLoading } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [playCounter, setPlayCounter] = useState(0);
 
   // Загружаем баннеры с учетом location_id пользователя
   // Вызываем хук всегда, независимо от условий
-  const { banners, isLoading, error } = useBanners(
-    isAuthenticated,
-    user?.location_id
-  );
+  const { banners, error } = useBanners(isAuthenticated, user?.location_id);
 
   // Проверяем авторизацию
   useEffect(() => {
@@ -59,6 +57,7 @@ export default function DisplayPage() {
 
       const handleEnded = () => {
         setCurrentIndex((prev) => (prev + 1) % banners.length);
+        setPlayCounter((prev) => prev + 1);
       };
 
       node.addEventListener("ended", handleEnded);
@@ -76,6 +75,7 @@ export default function DisplayPage() {
 
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % banners.length);
+      setPlayCounter((prev) => prev + 1);
     }, showTime);
 
     return () => clearInterval(interval);
@@ -134,7 +134,9 @@ export default function DisplayPage() {
             </div>
           )
         ) : currentBanner.image ? (
+          //поправить отображение видео
           <video
+            key={`${currentBanner.id}-${playCounter}`}
             ref={videoRef}
             src={currentBanner.image}
             autoPlay
