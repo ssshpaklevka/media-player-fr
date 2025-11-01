@@ -19,8 +19,10 @@ apiClient.interceptors.response.use(
       if (typeof window !== "undefined") {
         localStorage.removeItem("user");
         // Перенаправляем на страницу входа только если мы не на ней
-        if (window.location.pathname !== "/admin") {
-          window.location.href = "/admin";
+        const currentPath = window.location.pathname;
+        const loginPath = "/media-player";
+        if (currentPath !== loginPath) {
+          window.location.href = loginPath;
         }
       }
     }
